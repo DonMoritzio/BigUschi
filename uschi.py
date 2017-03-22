@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import telepot
 import time
-import tokenconfig as tk 
+import tokenconfig as tk
 import pyinotify as pyno
 from pprint import pprint
 from subprocess import call
@@ -24,7 +24,7 @@ class EventHandler(pyno.ProcessEvent):
 
 handler = EventHandler()
 notifier = pyno.Notifier(wm, handler)
-wdd = wm.add_watch('/root/webcam/test/pic', mask)
+wdd = wm.add_watch('/root/BigUschi/pics', mask)
 notifier.loop()
 
 def takePicture():
@@ -47,7 +47,7 @@ def on_callback_query(msg):
         if query_data == 'takePicture':
             bot.answerCallbackQuery(query_id, text='Uschi hält die Augen offen.')
             pic = takePicture()
-            bot.sendPhoto(from_id, photo=open(pic, 'rb'))
+            #bot.sendPhoto(from_id, photo=open(pic, 'rb'))
     else:
         bot.answerCallbackQuery(query_id, text='Du hast leider keine Berechtigung dafür.')
 
