@@ -12,14 +12,17 @@ bot = telepot.Bot(tk.token)
 bot.setWebhook() # unset webhook with out parameters
 
 wm = pyno.WatchManager()
-
+watching = 0
 
 class EventHandler(pyno.ProcessEvent):
     def process_IN_CREATE(self, event):
-        print("new Picture detected")
-        time.sleep(2)
-        for id in tk.authorized_ids:
-            bot.sendPhoto(id, photo=open(event.pathname, 'rb'))
+        if watching:
+            print("new Picture detected")
+            time.sleep(2)
+            for id in tk.authorized_ids:
+                bot.sendPhoto(id, photo=open(event.pathname, 'rb'))
+        else:
+            notifier.stop()
 
 handler = EventHandler()
 notifier = pyno.Notifier(wm, handler)
@@ -27,19 +30,18 @@ wdd = wm.add_watch('/root/BigUschi/pics', pyno.IN_CREATE)
 
 
 
-def takePicture():
+def takePicture(query_id, from_id):
     bot.answerCallbackQuery(query_id, text='Uschi hält die Augen offen.')
     picName = "/root/BigUschi/pics/test.jpg"
-    call(["fswebcam", "--no-banner", "-q", "-S", "20", picName])
-    #bot.sendPhoto(from_id, photo=open(picName, 'rb'))
+    #call(["fswebcam", "--no-banner", "-q", "-S", "20", picName])
+    bot.sendPhoto(from_id, photo=open(picName, 'rb'))
 
-def watch():
-    notifier.loop()
 
 def on_chat_message(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
                    [InlineKeyboardButton(text='Mach ein Foto!', callback_data='takePicture')],
+                   [InlineKeyboardButton(text='Stopp!', callback_data='stopWatching')],
                    [InlineKeyboardButton(text='Wache!', callback_data='watchdog')]
                ])
 
@@ -50,12 +52,16 @@ def on_callback_query(msg):
     print('Anfrage an Uschi: ', from_id, query_data, time.asctime(time.localtime(time.time())))
     if from_id not in tk.authorized_ids:
         bot.answerCallbackQuery(query_id, text='Du hast leider keine Berechtigung dafür.')
-        break
+        return
     if query_data == 'takePicture':
-        takePicture()
+        takePicture(query_id, from_id)
     elif query_data == 'watchdog':
-        watch()
-
+        print("start watching")
+        watching = 1 
+        notifier.loop()
+    elif query_data == 'stopWatching':
+        watching = 0
+        print("stop watching")
 
 bot.message_loop({'chat': on_chat_message,
                   'callback_query': on_callback_query})
