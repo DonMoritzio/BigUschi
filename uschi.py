@@ -18,9 +18,10 @@ mask = pyno.IN_CREATE
 class EventHandler(pyno.ProcessEvent):
     def process_IN_CREATE(self, event):
         print("new Picture detected")
-        time.sleep(3)
-        for id in authorized_ids:
+        time.sleep(2)
+        for id in tk.authorized_ids:
             bot.sendPhoto(id, photo=open(event.pathname, 'rb'))
+            
 
 handler = EventHandler()
 notifier = pyno.Notifier(wm, handler)
@@ -28,7 +29,7 @@ wdd = wm.add_watch('/root/BigUschi/pics', mask)
 notifier.loop()
 
 def takePicture():
-    picName = "/root/webcam/snap.jpg"
+    picName = "/root/BigUschi/pics/test.jpg"
     call(["fswebcam", "--no-banner", "-q", "-S", "20", picName])
     return picName
 
