@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 import telepot
 import time
-import tokenconfig as tk
+import os
 import pyinotify as pyno
 from pprint import pprint
 from subprocess import call
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 
-bot = telepot.Bot(tk.token)
+telegram_token = os.environ['USCHI_TELEGRAM_TOKEN']
+authorized_ids = os.environ['USCHI_TELEGRAM_AUTHORIZED_IDS']
+
+bot = telepot.Bot(telegram_token)
 bot.setWebhook() # unset webhook with out parameters
 
 wm = pyno.WatchManager()
@@ -19,7 +22,7 @@ class EventHandler(pyno.ProcessEvent):
         if watching:
             print("new Picture detected")
             time.sleep(2)
-            for id in tk.authorized_ids:
+            for id in authorized_ids:
                 bot.sendPhoto(id, photo=open(event.pathname, 'rb'))
         else:
             notifier.stop()
@@ -50,7 +53,7 @@ def on_chat_message(msg):
 def on_callback_query(msg):
     query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
     print('Anfrage an Uschi: ', from_id, query_data, time.asctime(time.localtime(time.time())))
-    if from_id not in tk.authorized_ids:
+    if from_id not in authorized_ids:
         bot.answerCallbackQuery(query_id, text='Du hast leider keine Berechtigung dafür.')
         return
     if query_data == 'takePicture':
